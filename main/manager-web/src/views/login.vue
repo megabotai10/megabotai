@@ -100,25 +100,18 @@
           </div>
         </div>
       </el-main>
-      <el-footer>
-        <version-footer />
-      </el-footer>
     </el-container>
   </div>
 </template>
 
 <script>
 import Api from "@/apis/api";
-import VersionFooter from "@/components/VersionFooter.vue";
 import i18n, { changeLanguage } from "@/i18n";
 import { goToPage, showDanger, showSuccess, sm2Encrypt, validateMobile } from "@/utils";
 import { mapState } from "vuex";
 
 export default {
   name: "login",
-  components: {
-    VersionFooter,
-  },
   computed: {
     ...mapState({
       allowUserRegister: (state) => state.pubConfig.allowUserRegister,
@@ -271,10 +264,11 @@ export default {
           this.getUserInfo();
         },
         (err) => {
-          // 直接使用后端返回的国际化消息
-          let errorMessage = err.data.msg || "登录失败";
-
-          showDanger(errorMessage);
+          const responseMessage = err && err.data && err.data.msg;
+          const isServerError = err && Number(err.status) >= 500;
+          showDanger(responseMessage || (isServerError
+            ? this.$t("common.networkError")
+            : this.$t("message.error")));
         }
       );
 

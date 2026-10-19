@@ -17,10 +17,11 @@ export default {
                 RequestService.clearRequestTime()
                 failCallback(err)
             })
-            .networkFail(() => {
-                RequestService.reAjaxFun(() => {
-                    this.login(loginForm, callback, failCallback)
-                })
+            .networkFail((err) => {
+                RequestService.clearRequestTime()
+                if (failCallback) {
+                    failCallback(err)
+                }
             }).send()
     },
     // 获取验证码

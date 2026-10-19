@@ -32,6 +32,16 @@ export const register = () => {
                     console.log('[小智服务] 新内容可用，请刷新页面');
                     // 可以在这里展示更新提示
                     const updateNotification = document.createElement('div');
+                    const language = localStorage.getItem('userLanguage') || 'vi';
+                    const updateMessages = {
+                      vi: ['Đã có phiên bản mới. Hãy làm mới trang để cập nhật.', 'Làm mới'],
+                      en: ['A new version is available. Refresh to update.', 'Refresh'],
+                      de: ['Eine neue Version ist verfügbar. Zum Aktualisieren neu laden.', 'Neu laden'],
+                      zh_CN: ['发现新版本，点击刷新应用', '刷新'],
+                      zh_TW: ['發現新版本，點擊刷新應用', '刷新'],
+                      pt_BR: ['Uma nova versão está disponível. Atualize para continuar.', 'Atualizar']
+                    };
+                    const [message, refreshLabel] = updateMessages[language] || updateMessages.vi;
                     updateNotification.style.cssText = `
                       position: fixed;
                       bottom: 20px;
@@ -43,14 +53,20 @@ export const register = () => {
                       box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
                       z-index: 9999;
                     `;
-                    updateNotification.innerHTML = `
-                      <div style="display: flex; align-items: center;">
-                        <span style="margin-right: 10px;">发现新版本，点击刷新应用</span>
-                        <button style="background: white; color: #409EFF; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">刷新</button>
-                      </div>
-                    `;
+                    const messageLabel = document.createElement('span');
+                    messageLabel.textContent = message;
+                    messageLabel.style.marginRight = '10px';
+                    const refreshButton = document.createElement('button');
+                    refreshButton.type = 'button';
+                    refreshButton.textContent = refreshLabel;
+                    refreshButton.style.cssText = 'background: white; color: #409EFF; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+                    const notificationContent = document.createElement('div');
+                    notificationContent.style.display = 'flex';
+                    notificationContent.style.alignItems = 'center';
+                    notificationContent.append(messageLabel, refreshButton);
+                    updateNotification.appendChild(notificationContent);
                     document.body.appendChild(updateNotification);
-                    updateNotification.querySelector('button').addEventListener('click', () => {
+                    refreshButton.addEventListener('click', () => {
                       window.location.reload();
                     });
                   } else {
@@ -110,4 +126,4 @@ export const unregister = () => {
         console.error(error.message);
       });
   }
-}; 
+};
