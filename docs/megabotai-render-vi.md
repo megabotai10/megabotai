@@ -8,6 +8,8 @@ Server hiện gồm hai tiến trình giao tiếp với firmware: WebSocket trê
 
 Render chỉ chuyển tiếp lưu lượng Internet công khai đến một cổng HTTP cho mỗi Web Service, bao gồm cả kết nối WebSocket. Vì vậy cần một reverse proxy công khai định tuyến `/xiaozhi/v1/` tới cổng WebSocket `8000`, `/xiaozhi/ota/` và `/mcp/vision/explain` tới HTTP `8003` ([giới hạn cổng](https://render.com/docs/web-services), [WebSocket trên Render](https://render.com/docs/websocket)). Cấu hình Docker hiện có trong repo dành cho Docker Compose và không tự thực hiện ánh xạ cổng kiểu này trên Render. Dashboard/API và server thoại có thể chạy thành các dịch vụ riêng; MySQL/Redis phải có thể truy cập từ các dịch vụ đó.
 
+Để Render nhận diện Dockerfile mặc định, repo có `Dockerfile` ở thư mục gốc. Dockerfile này dựng dashboard Vue và API Java, lắng nghe HTTP trên cổng `10000` và proxy `/xiaozhi/` tới API cổng `8003`. Trong Render, chọn runtime **Docker**, Dockerfile path `./Dockerfile`, root directory để trống và HTTP port `10000`. Đặt các biến `SPRING_DATASOURCE_DRUID_URL`, `SPRING_DATASOURCE_DRUID_USERNAME`, `SPRING_DATASOURCE_DRUID_PASSWORD`, `SPRING_DATA_REDIS_HOST`, `SPRING_DATA_REDIS_PASSWORD` và `SPRING_DATA_REDIS_PORT` trong Environment. Cấu hình này chưa chạy Python voice/WebSocket server; server thoại vẫn cần dịch vụ riêng và proxy WebSocket/OTA công khai như mô tả ở trên.
+
 ## Cấu hình firmware
 
 Sau khi tạo dịch vụ công khai và có hostname HTTPS trên Render:

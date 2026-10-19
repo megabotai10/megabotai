@@ -1,0 +1,31 @@
+# Render's default Dockerfile builds the dashboard and Java management API.
+FROM node:18 AS web-builder
+WORKDIR /app
+COPY main/manager-web/package*.json ./
+RUN npm install
+COPY main/manager-web .
+RUN npm run build
+
+FROM maven:3.9.4-eclipse-temurin-21 AS api-builder
+WORKDIR /app
+COPY main/manager-api/pom.xml .
+COPY main/manager-api/src ./src
+RUN mvn clean package -Dmaven.test.skip=true
+
+FROM bellsoft/liberica-runtime-container:jre-21-glibc
+RUN apk update && \
+    apk add --no-cache --no-scripts nginx bash fontconfig ttf-dejavu && \
+    rm -rf /var/cache/apk/* && \
+    mkdir -p /run/nginx /var/log/nginx /var/tmp/nginx /etc/nginx/conf.d
+
+COPY main/manager-web/public/generator/static/fonts/*.ttf /usr/share/fonts/
+RUN fc-cache -f -v
+
+COPY docs/docker/nginx-render.conf /etc/nginx/nginx.conf
+COPY --from=web-builder /app/dist /usr/share/nginx/html
+COPY --from=api-builder /app/target/xiaozhi-esp32-api.jar /app/xiaozhi-esp32-api.jar
+COPY docs/docker/start.sh /start.sh
+RUN chmod +x /start.sh
+
+EXPOSE 10000
+CMD ["/start.sh"]
