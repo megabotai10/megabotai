@@ -12,17 +12,11 @@ import com.google.common.cache.CacheBuilder;
 import com.wf.captcha.SpecCaptcha;
 import com.wf.captcha.base.Captcha;
 
-import cn.hutool.core.util.RandomUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
-import xiaozhi.common.constant.Constant;
-import xiaozhi.common.exception.ErrorCode;
-import xiaozhi.common.exception.RenException;
 import xiaozhi.common.redis.RedisKeys;
 import xiaozhi.common.redis.RedisUtils;
 import xiaozhi.modules.security.service.CaptchaService;
-import xiaozhi.modules.sms.service.SmsService;
-import xiaozhi.modules.sys.service.SysParamsService;
 
 /**
  * 验证码
@@ -31,10 +25,6 @@ import xiaozhi.modules.sys.service.SysParamsService;
 public class CaptchaServiceImpl implements CaptchaService {
     @Resource
     private RedisUtils redisUtils;
-    @Resource
-    private SmsService smsService;
-    @Resource
-    private SysParamsService sysParamsService;
     @Value("${renren.redis.open}")
     private boolean open;
     /**
@@ -74,65 +64,6 @@ public class CaptchaServiceImpl implements CaptchaService {
         }
 
         return false;
-    }
-
-    @Override
-    public void sendSMSValidateCode(String phone) {
-        // 检查发送间隔
-        String lastSendTimeKey = RedisKeys.getSMSLastSendTimeKey(phone);
-        // 获取是否发送过，如果没有设置最后发送时间（60秒）
-        String lastSendTime = redisUtils
-                .getKeyOrCreate(lastSendTimeKey,
-                        String.valueOf(System.currentTimeMillis()), 60L);
-        if (lastSendTime != null) {
-            long lastSendTimeLong = Long.parseLong(lastSendTime);
-            long currentTime = System.currentTimeMillis();
-            long timeDiff = currentTime - lastSendTimeLong;
-            if (timeDiff < 60000) {
-                throw new RenException(ErrorCode.SMS_SEND_TOO_FREQUENTLY, String.valueOf((60000 - timeDiff) / 1000));
-            }
-        }
-
-        // 检查今日发送次数
-        String todayCountKey = RedisKeys.getSMSTodayCountKey(phone);
-        Integer todayCount = (Integer) redisUtils.get(todayCountKey);
-        if (todayCount == null) {
-            todayCount = 0;
-        }
-
-        // 获取最大发送次数限制
-        Integer maxSendCount = sysParamsService.getValueObject(
-                Constant.SysMSMParam.SERVER_SMS_MAX_SEND_COUNT.getValue(),
-                Integer.class);
-        if (maxSendCount == null) {
-            maxSendCount = 5; // 默认值
-        }
-
-        if (todayCount >= maxSendCount) {
-            throw new RenException(ErrorCode.TODAY_SMS_LIMIT_REACHED);
-        }
-
-        String key = RedisKeys.getSMSValidateCodeKey(phone);
-        String validateCodes = RandomUtil.randomNumbers(6);
-
-        // 设置验证码
-        setCache(key, validateCodes);
-
-        // 更新今日发送次数
-        if (todayCount == 0) {
-            redisUtils.increment(todayCountKey, RedisUtils.DEFAULT_EXPIRE);
-        } else {
-            redisUtils.increment(todayCountKey);
-        }
-
-        // 发送验证码短信
-        smsService.sendVerificationCodeSms(phone, validateCodes);
-    }
-
-    @Override
-    public boolean validateSMSValidateCode(String phone, String code, Boolean delete) {
-        String key = RedisKeys.getSMSValidateCodeKey(phone);
-        return validate(key, code, delete);
     }
 
     private void setCache(String key, String value) {

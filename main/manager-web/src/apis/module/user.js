@@ -42,26 +42,6 @@ export default {
 
             }).send()
     },
-    // 发送短信验证码
-    sendSmsVerification(data, callback, failCallback) {
-        RequestService.sendRequest()
-            .url(`${getServiceUrl()}/user/smsVerification`)
-            .method('POST')
-            .data(data)
-            .success((res) => {
-                RequestService.clearRequestTime()
-                callback(res)
-            })
-            .fail((err) => {
-                RequestService.clearRequestTime()
-                failCallback(err)
-            })
-            .networkFail(() => {
-                RequestService.reAjaxFun(() => {
-                    this.sendSmsVerification(data, callback, failCallback)
-                })
-            }).send()
-    },
     // 注册账号
     register(registerForm, callback, failCallback) {
         RequestService.sendRequest()
@@ -175,30 +155,4 @@ export default {
                 });
             }).send();
     },
-    // 找回用户密码
-    retrievePassword(passwordData, callback, failCallback) {
-        RequestService.sendRequest()
-            .url(`${getServiceUrl()}/user/retrieve-password`)
-            .method('PUT')
-            .data({
-                phone: passwordData.phone,
-                code: passwordData.code,
-                password: passwordData.password,
-                captchaId: passwordData.captchaId
-            })
-            .success((res) => {
-                RequestService.clearRequestTime();
-                callback(res);
-            })
-            .fail((err) => {
-                RequestService.clearRequestTime();
-                failCallback(err);
-            })
-            .networkFail(() => {
-                RequestService.reAjaxFun(() => {
-                    this.retrievePassword(passwordData, callback, failCallback);
-                });
-            }).send()
-    },
-
 }

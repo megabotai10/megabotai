@@ -13,6 +13,25 @@ import xiaozhi.modules.sys.service.SysParamsService;
  */
 public class Sm2DecryptUtil {
 
+    /** Decrypt a password submitted without a graphical captcha. */
+    public static String decryptPassword(String encryptedPassword, SysParamsService sysParamsService) {
+        String privateKeyStr = sysParamsService.getValue(Constant.SM2_PRIVATE_KEY, true);
+        if (StringUtils.isBlank(privateKeyStr)) {
+            throw new RenException(ErrorCode.SM2_KEY_NOT_CONFIGURED);
+        }
+        try {
+            String password = SM2Utils.decrypt(privateKeyStr, encryptedPassword);
+            if (StringUtils.isEmpty(password)) {
+                throw new RenException(ErrorCode.SM2_DECRYPT_ERROR);
+            }
+            return password;
+        } catch (RenException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RenException(ErrorCode.SM2_DECRYPT_ERROR);
+        }
+    }
+
     /**
      * 验证码长度
      */
@@ -50,12 +69,12 @@ public class Sm2DecryptUtil {
 
             boolean embeddedCaptchaValid = captchaService.validate(captchaId, embeddedCaptcha, true);
             if (!embeddedCaptchaValid) {
-                throw new RenException(ErrorCode.SMS_CAPTCHA_ERROR);
+                throw new RenException(ErrorCode.CAPTCHA_ERROR);
             }
 
             return actualPassword;
         } else if (decryptedContent.length() > 0) {
-            throw new RenException(ErrorCode.SMS_CAPTCHA_ERROR);
+            throw new RenException(ErrorCode.CAPTCHA_ERROR);
         } else {
             throw new RenException(ErrorCode.SM2_DECRYPT_ERROR);
         }

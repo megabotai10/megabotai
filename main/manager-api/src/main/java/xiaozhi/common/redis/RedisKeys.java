@@ -119,27 +119,6 @@ public class RedisKeys {
     }
 
     /**
-     * 获取短信验证码的缓存key
-     */
-    public static String getSMSValidateCodeKey(String phone) {
-        return "sms:Validate:Code:" + phone;
-    }
-
-    /**
-     * 获取短信验证码最后发送时间的缓存key
-     */
-    public static String getSMSLastSendTimeKey(String phone) {
-        return "sms:Validate:Code:" + phone + ":last_send_time";
-    }
-
-    /**
-     * 获取短信验证码今日发送次数的缓存key
-     */
-    public static String getSMSTodayCountKey(String phone) {
-        return "sms:Validate:Code:" + phone + ":today_count";
-    }
-
-    /**
      * 聊天记录UUID映射的Key
      */
     public static String getChatHistoryKey(String uuid) {

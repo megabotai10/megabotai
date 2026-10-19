@@ -46,13 +46,6 @@ const routes = [
       return import('../views/register.vue')
     }
   },
-  {
-    path: '/retrieve-password',
-    name: 'RetrievePassword',
-    component: function () {
-      return import('../views/retrievePassword.vue')
-    }
-  },
   // 设备管理页面路由
   {
     path: '/device-management',

@@ -1,6 +1,6 @@
 .welcome {
-  min-width: 1200px;
-  min-height: 675px;
+  min-width: 320px;
+  min-height: 100vh;
   height: 100vh;
   display: flex;
   align-items: center;
@@ -44,6 +44,30 @@
   padding: 35px 0;
   width: 450px;
   box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .login-box {
+    right: 5%;
+  }
+
+  .login-person {
+    left: 20%;
+    width: 40%;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-box {
+    left: 50%;
+    right: auto;
+    width: min(450px, calc(100% - 32px));
+    transform: translate(-50%, -50%);
+  }
+
+  .login-person {
+    display: none;
+  }
 }
 
 .el-dropdown-link {
