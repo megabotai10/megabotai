@@ -238,6 +238,8 @@ export default {
     this.$store.dispatch("fetchPubConfig").then(() => {
       // 根据配置决定默认登录方式
       this.isMobileLogin = this.enableMobileRegister;
+    }).catch(() => {
+      // Login retries the public configuration request before encrypting.
     });
   },
   methods: {
@@ -342,11 +344,22 @@ export default {
       // 加密密码
       let encryptedPassword;
       try {
+        if (!this.sm2PublicKey) {
+          await this.$store.dispatch("fetchPubConfig");
+        }
+        if (!this.sm2PublicKey) {
+          showDanger(this.$t('sm2.publicKeyNotConfigured'));
+          return;
+        }
         // 拼接验证码和密码
         const captchaAndPassword = this.form.captcha + this.form.password;
         encryptedPassword = sm2Encrypt(this.sm2PublicKey, captchaAndPassword);
       } catch (error) {
-        console.error("密码加密失败:", error);
+        console.error("获取加密密钥或加密密码失败:", error);
+        if (!this.sm2PublicKey) {
+          showDanger(this.$t('sm2.publicKeyNotConfigured'));
+          return;
+        }
         showDanger(this.$t('sm2.encryptionFailed'));
         return;
       }

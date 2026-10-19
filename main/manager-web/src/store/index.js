@@ -64,10 +64,14 @@ export default new Vuex.Store({
     fetchPubConfig({ commit }) {
       return new Promise((resolve) => {
         Api.user.getPubConfig(({ data }) => {
-          if (data.code === 0) {
+          if (data.code === 0 && data.data && data.data.sm2PublicKey) {
             commit('setPubConfig', data.data);
+            resolve(data.data);
+            return;
           }
-          resolve();
+          resolve(null);
+        }, () => {
+          resolve(null);
         });
       });
     }
